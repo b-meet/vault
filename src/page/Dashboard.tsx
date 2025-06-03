@@ -10,43 +10,13 @@ import {
 	Settings,
 	User,
 } from 'lucide-react';
-import {useEffect, useState} from 'react';
 import {useNavigate} from 'react-router';
 import {ROUTES} from '../constants';
-import type {Profile} from '../types';
+import {useAppSelector} from '../hooks/redux';
 
 const Dashboard = () => {
-	const [profiles, setProfiles] = useState<Profile[]>([
-		{
-			id: '1',
-			name: 'Personal',
-			basicInfo: {
-				firstName: 'John',
-				lastName: 'Doe',
-				email: 'john.doe@email.com',
-				phone: '+1 (555) 123-4567',
-				dateOfBirth: '1990-01-15',
-			},
-			address: {
-				street: '123 Main St',
-				city: 'San Francisco',
-				state: 'CA',
-				zipCode: '94102',
-				country: 'USA',
-			},
-			socialLinks: {
-				linkedin: 'linkedin.com/in/johndoe',
-				twitter: '@johndoe',
-				github: 'github.com/johndoe',
-				website: 'johndoe.com',
-			},
-		},
-	]);
 	const navigate = useNavigate();
-
-	useEffect(() => {
-		console.log(setProfiles);
-	}, []);
+	const profiles = useAppSelector((state) => state.profile);
 
 	return (
 		<div className="min-h-screen bg-gray-50">

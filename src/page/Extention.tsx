@@ -1,43 +1,13 @@
 import {Box, LinkIcon, MapPin, User} from 'lucide-react';
-import {useEffect, useState} from 'react';
+import {useState} from 'react';
 import {useNavigate} from 'react-router';
 import {ROUTES} from '../constants';
-import type {Profile} from '../types';
+import {useAppSelector} from '../hooks/redux';
 
 const ExtensionPopup = () => {
 	const navigate = useNavigate();
 	const [extensionEnabled, setExtensionEnabled] = useState(true);
-	const [profiles, setProfiles] = useState<Profile[]>([
-		{
-			id: '1',
-			name: 'Personal',
-			basicInfo: {
-				firstName: 'John',
-				lastName: 'Doe',
-				email: 'john.doe@email.com',
-				phone: '+1 (555) 123-4567',
-				dateOfBirth: '1990-01-15',
-			},
-			address: {
-				street: '123 Main St',
-				city: 'San Francisco',
-				state: 'CA',
-				zipCode: '94102',
-				country: 'USA',
-			},
-			socialLinks: {
-				linkedin: 'linkedin.com/in/johndoe',
-				twitter: '@johndoe',
-				github: 'github.com/johndoe',
-				website: 'johndoe.com',
-			},
-		},
-	]);
-
-	useEffect(() => {
-		console.log(setProfiles);
-	}, []);
-
+	const profiles = useAppSelector((state) => state.profile);
 	return (
 		<div className="w-80 bg-white rounded-lg shadow-xl border border-gray-200">
 			{/* Header */}

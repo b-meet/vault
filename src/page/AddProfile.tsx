@@ -3,71 +3,39 @@ import type {Profile} from '../types';
 import {ArrowRight} from 'lucide-react';
 import {useNavigate} from 'react-router';
 import {ROUTES} from '../constants';
+import {useAppDispatch} from '../hooks/redux';
+import {addProfile} from '../redux/slice/profileSlice';
 
 const AddProfile = () => {
 	const navigate = useNavigate();
-	const [profiles, setProfiles] = useState<Profile[]>([
-		{
-			id: '1',
-			name: 'Personal',
-			basicInfo: {
-				firstName: 'John',
-				lastName: 'Doe',
-				email: 'john.doe@email.com',
-				phone: '+1 (555) 123-4567',
-				dateOfBirth: '1990-01-15',
-			},
-			address: {
-				street: '123 Main St',
-				city: 'San Francisco',
-				state: 'CA',
-				zipCode: '94102',
-				country: 'USA',
-			},
-			socialLinks: {
-				linkedin: 'linkedin.com/in/johndoe',
-				twitter: '@johndoe',
-				github: 'github.com/johndoe',
-				website: 'johndoe.com',
-			},
+	const dispatch = useAppDispatch();
+	const [profileData, setProfileData] = useState<Profile>({
+		id: Date.now().toString(),
+		name: 'New Profile',
+		basicInfo: {
+			firstName: '',
+			lastName: '',
+			email: '',
+			phone: '',
+			dateOfBirth: '',
 		},
-	]);
-	const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
-	const [profileData, setProfileData] = useState<Profile>(
-		selectedProfile || {
-			id: Date.now().toString(),
-			name: 'New Profile',
-			basicInfo: {
-				firstName: '',
-				lastName: '',
-				email: '',
-				phone: '',
-				dateOfBirth: '',
-			},
-			address: {
-				street: '',
-				city: '',
-				state: '',
-				zipCode: '',
-				country: '',
-			},
-			socialLinks: {
-				linkedin: '',
-				twitter: '',
-				github: '',
-				website: '',
-			},
-		}
-	);
+		address: {
+			street: '',
+			city: '',
+			state: '',
+			zipCode: '',
+			country: '',
+		},
+		socialLinks: {
+			linkedin: '',
+			twitter: '',
+			github: '',
+			website: '',
+		},
+	});
 
 	const handleSave = () => {
-		if (selectedProfile) {
-			setProfiles(
-				profiles.map((p) => (p.id === profileData.id ? profileData : p))
-			);
-		} else {
-			setProfiles([...profiles, profileData]);
-		}
+		dispatch(addProfile(profileData));
 		navigate(ROUTES.DASHBOARD);
 	};
 
@@ -97,7 +65,7 @@ const AddProfile = () => {
 				<div className="bg-white rounded-xl shadow-sm p-8">
 					<div className="mb-8">
 						<h1 className="text-2xl font-bold text-gray-900 mb-2">
-							{selectedProfile ? 'Edit Profile' : 'Create New Profile'}
+							{false ? 'Edit Profile' : 'Create New Profile'}
 						</h1>
 						<input
 							type="text"

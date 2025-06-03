@@ -8,11 +8,13 @@ import Settings from './page/Settings';
 import Extention from './page/Extention';
 import AddProfile from './page/AddProfile';
 import Account from './page/Account';
+import {Provider} from 'react-redux';
+import {store} from './redux/store';
 // import AutofillSuggestion from './components/AutoFillPreview';
 
 const VaultApp: React.FC = () => {
 	return (
-		<div className="relative">
+		<Provider store={store}>
 			<BrowserRouter>
 				<Routes>
 					<Route path={ROUTES.LANDING} element={<Landing />} />
@@ -26,7 +28,7 @@ const VaultApp: React.FC = () => {
 			</BrowserRouter>
 
 			{/* <AutofillSuggestion /> */}
-		</div>
+		</Provider>
 	);
 };
 

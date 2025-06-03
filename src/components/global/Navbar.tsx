@@ -26,7 +26,7 @@ const Navbar = () => {
 				</button>
 				<button
 					onClick={() => handleNavigateToAuth(false)}
-					className="cursor-pointer text-white bg-gradient-to-br from-indigo-600 to-purple-500 group/btn group h-8 pr-3 pl-[10px] rounded-r-[20px] rounded-l-[8px] shadow relative"
+					className="cursor-pointer text-white main-gradient group/btn group h-8 pr-3 pl-[10px] rounded-r-[20px] rounded-l-[8px] shadow relative"
 				>
 					Get Started
 				</button>

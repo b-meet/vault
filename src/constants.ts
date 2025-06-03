@@ -5,4 +5,5 @@ export const ROUTES = {
 	SETTINGS: '/settings',
 	EXTENTIONS: '/extention',
 	ADD_PROFILE: '/add-profile',
+	USER_PROFILE: '/profile',
 };

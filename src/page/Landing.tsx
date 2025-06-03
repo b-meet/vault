@@ -26,7 +26,7 @@ const Landing = () => {
 				</p>
 				<button
 					onClick={handleNavigateToAuth}
-					className="font-[Delius] text-xl gap-2 cursor-pointer bg-gradient-to-br from-indigo-600 to-purple-500 group/btn rounded-full flex items-center text-white py-2 px-5"
+					className="font-[Delius] text-xl gap-2 cursor-pointer main-gradient group/btn rounded-full flex items-center text-white py-2 px-5"
 				>
 					Start Filling
 					<div className="flex items-center opacity-50 group-hover/btn:opacity-100 transition-opacity ">

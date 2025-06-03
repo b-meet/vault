@@ -70,7 +70,12 @@ const Dashboard = () => {
 							<Settings className="h-5 w-5" />
 						</button>
 						<div className="h-8 w-8 bg-indigo-600 rounded-full flex items-center justify-center">
-							<User className="h-4 w-4 text-white" />
+							<button
+								onClick={() => navigate(ROUTES.USER_PROFILE)}
+								className="cursor-pointer p-2"
+							>
+								<User className="h-4 w-4 text-white" />
+							</button>
 						</div>
 					</div>
 				</div>

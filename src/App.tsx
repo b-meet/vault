@@ -7,6 +7,7 @@ import Dashboard from './page/Dashboard';
 import Settings from './page/Settings';
 import Extention from './page/Extention';
 import AddProfile from './page/AddProfile';
+import Account from './page/Account';
 // import AutofillSuggestion from './components/AutoFillPreview';
 
 const VaultApp: React.FC = () => {
@@ -20,6 +21,7 @@ const VaultApp: React.FC = () => {
 					<Route path={ROUTES.SETTINGS} element={<Settings />} />
 					<Route path={ROUTES.EXTENTIONS} element={<Extention />} />
 					<Route path={ROUTES.ADD_PROFILE} element={<AddProfile />} />
+					<Route path={ROUTES.USER_PROFILE} element={<Account />} />
 				</Routes>
 			</BrowserRouter>
 

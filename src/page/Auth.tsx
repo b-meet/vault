@@ -59,7 +59,7 @@ const Auth = () => {
 					<button
 						type="button"
 						onClick={handleAuth}
-						className="w-full py-3 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition-colors"
+						className="w-full py-3 main-gradient text-white font-semibold rounded-lg hover:bg-indigo-700 transition-colors"
 					>
 						{authMode === 'signin' ? 'Sign In' : 'Create Account'}
 					</button>

@@ -1,5 +1,9 @@
 @import 'tailwindcss';
 
+.main-gradient {
+	@apply bg-gradient-to-br from-indigo-600 to-purple-500;
+}
+
 ::selection {
 	background-color: tailwindcss('colors.indigo.200');
 }

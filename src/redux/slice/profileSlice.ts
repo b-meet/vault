@@ -1,42 +1,42 @@
 import {createSlice} from '@reduxjs/toolkit';
+import type {PayloadAction} from '@reduxjs/toolkit';
+import type {Profile} from '../../types';
+interface ProfileState {
+	profiles: Profile[];
+	activeProfileId: string | null;
+}
+
+const initialState: ProfileState = {
+	profiles: [],
+	activeProfileId: null,
+};
 
 const profileSlice = createSlice({
 	name: 'profiles',
-	initialState: [
-		{
-			id: '1',
-			name: 'Personal',
-			basicInfo: {
-				firstName: 'John',
-				lastName: 'Baburao',
-				email: 'john.doe@email.com',
-				phone: '+1 (555) 123-4567',
-				dateOfBirth: '1990-01-15',
-			},
-			address: {
-				street: '123 Main St',
-				city: 'San Francisco',
-				state: 'CA',
-				zipCode: '94102',
-				country: 'USA',
-			},
-			socialLinks: {
-				linkedin: 'linkedin.com/in/johndoe',
-				twitter: '@johndoe',
-				github: 'github.com/johndoe',
-				website: 'johndoe.com',
-			},
-		},
-	],
+	initialState,
 	reducers: {
-		addProfile: (state, action) => {
-			const newProfile = action.payload;
-			state.push(newProfile);
+		addProfile: (state, action: PayloadAction<Profile>) => {
+			state.profiles.push(action.payload);
 		},
-		updateProfile: () => {},
-		deleteProfile: () => {},
-		setActiveProfile: () => {},
-		resetProfiles: () => {},
+		updateProfile: (state, action: PayloadAction<Profile>) => {
+			const index = state.profiles.findIndex((p: Profile) => p.id === action.payload.id);
+			if (index !== -1) {
+				state.profiles[index] = action.payload;
+			}
+		},
+		deleteProfile: (state, action: PayloadAction<string>) => {
+			state.profiles = state.profiles.filter((p: Profile) => p.id !== action.payload);
+			if (state.activeProfileId === action.payload) {
+				state.activeProfileId = null;
+			}
+		},
+		setActiveProfile: (state, action: PayloadAction<string | null>) => {
+			state.activeProfileId = action.payload;
+		},
+		resetProfiles: (state) => {
+			state.profiles = [];
+			state.activeProfileId = null;
+		},
 	},
 });
 

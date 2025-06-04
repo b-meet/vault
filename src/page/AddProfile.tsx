@@ -1,17 +1,21 @@
-import {useState} from 'react';
+import {useState, useEffect} from 'react';
 import type {Profile} from '../types';
 import {ArrowRight} from 'lucide-react';
-import {useNavigate} from 'react-router';
+import {useNavigate, useLocation} from 'react-router';
 import {ROUTES} from '../constants';
-import {useAppDispatch} from '../hooks/redux';
-import {addProfile} from '../redux/slice/profileSlice';
+import {useAppDispatch, useAppSelector} from '../hooks/redux';
+import {addProfile, updateProfile} from '../redux/slice/profileSlice';
 
 const AddProfile = () => {
 	const navigate = useNavigate();
 	const dispatch = useAppDispatch();
+	const location = useLocation();
+	const profiles = useAppSelector((state) => state.profile.profiles);
+	const isEditing = location.search.includes('id=');
+
 	const [profileData, setProfileData] = useState<Profile>({
 		id: Date.now().toString(),
-		name: 'New Profile',
+		name: '',
 		basicInfo: {
 			firstName: '',
 			lastName: '',
@@ -34,14 +38,32 @@ const AddProfile = () => {
 		},
 	});
 
+	useEffect(() => {
+		if (isEditing) {
+			const params = new URLSearchParams(location.search);
+			const profileId = params.get('id');
+			const profileToEdit = profiles.find((p) => p.id === profileId);
+			if (profileToEdit) {
+				setProfileData(profileToEdit);
+			} else {
+				console.error('Profile not found for editing');
+				navigate(ROUTES.DASHBOARD);
+			}
+		}
+	}, [isEditing, location.search, profiles, navigate]);
+
 	const handleSave = () => {
-		dispatch(addProfile(profileData));
+		if (isEditing) {
+			dispatch(updateProfile(profileData));
+		} else {
+			dispatch(addProfile(profileData));
+		}
 		navigate(ROUTES.DASHBOARD);
 	};
 
 	return (
 		<div className="min-h-screen bg-gray-50">
-			<nav className="bg-white shadow-sm px-6 py-4">
+			<nav className="bg-white shadow-sm px-6 py-4 sticky top-0 z-50">
 				<div className="flex justify-between items-center">
 					<button
 						onClick={() => navigate(ROUTES.DASHBOARD)}
@@ -55,7 +77,7 @@ const AddProfile = () => {
 							onClick={handleSave}
 							className="px-4 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700"
 						>
-							Save Profile
+							{isEditing ? 'Update Profile' : 'Save Profile'}
 						</button>
 					</div>
 				</div>
@@ -65,7 +87,7 @@ const AddProfile = () => {
 				<div className="bg-white rounded-xl shadow-sm p-8">
 					<div className="mb-8">
 						<h1 className="text-2xl font-bold text-gray-900 mb-2">
-							{false ? 'Edit Profile' : 'Create New Profile'}
+							{isEditing ? 'Edit Profile' : 'Create New Profile'}
 						</h1>
 						<input
 							type="text"
@@ -73,8 +95,8 @@ const AddProfile = () => {
 							onChange={(e) =>
 								setProfileData({...profileData, name: e.target.value})
 							}
-							className="text-lg font-medium text-gray-600 border-none outline-none bg-transparent"
-							placeholder="Profile Name"
+							className="text-lg font-medium text-gray-500 bg-gray-100 py-1 px-3 rounded-lg outline-0"
+							placeholder="Add profile name"
 						/>
 					</div>
 

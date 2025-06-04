@@ -43,11 +43,11 @@ const Account: React.FC = () => {
 
 	return (
 		<div className="min-h-screen bg-gray-50">
-			<nav className="bg-white shadow-sm px-6 py-4">
+			<nav className="bg-white shadow-sm px-6 py-4 sticky top-0 z-50">
 				<div className="flex justify-between items-center">
 					<button
 						onClick={() => navigate(ROUTES.DASHBOARD)}
-						className="flex items-center space-x-2 text-gray-600 hover:text-gray-900"
+						className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 cursor-pointer"
 					>
 						<ArrowRight className="h-5 w-5 rotate-180" />
 						<span>Back to Dashboard</span>
@@ -57,13 +57,13 @@ const Account: React.FC = () => {
 							<>
 								<button
 									onClick={() => setIsEditing(false)}
-									className="px-4 py-2 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50"
+									className="cursor-pointer px-4 py-2 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50"
 								>
 									Cancel
 								</button>
 								<button
 									onClick={handleSave}
-									className="px-4 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 flex items-center space-x-2"
+									className="cursor-pointer px-4 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 flex items-center space-x-2"
 								>
 									<Save className="h-4 w-4" />
 									<span>Save Changes</span>
@@ -72,7 +72,7 @@ const Account: React.FC = () => {
 						) : (
 							<button
 								onClick={() => setIsEditing(true)}
-								className="px-4 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700"
+									className="cursor-pointer px-4 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700"
 							>
 								Edit Profile
 							</button>

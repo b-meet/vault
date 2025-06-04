@@ -1,11 +1,6 @@
 import {
 	Box,
 	Chrome,
-	Edit3,
-	LinkIcon,
-	Mail,
-	MapPin,
-	Phone,
 	Plus,
 	Settings,
 	User,
@@ -13,14 +8,15 @@ import {
 import {useNavigate} from 'react-router';
 import {ROUTES} from '../constants';
 import {useAppSelector} from '../hooks/redux';
+import ProfileCard from '../components/dashboard/ProfileCard';
 
 const Dashboard = () => {
 	const navigate = useNavigate();
-	const profiles = useAppSelector((state) => state.profile);
+	const profiles = useAppSelector((state) => state.profile.profiles);
 
 	return (
 		<div className="min-h-screen bg-gray-50">
-			<nav className="bg-white shadow-sm px-6 py-4">
+			<nav className="bg-white shadow-sm px-6 py-4 sticky top-0 z-50">
 				<div className="flex justify-between items-center">
 					<div className="flex items-center space-x-2">
 						<Box className="h-8 w-8 text-indigo-600" />
@@ -72,45 +68,7 @@ const Dashboard = () => {
 					</button>
 
 					{profiles.map((profile) => (
-						<div
-							key={profile.id}
-							className="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow"
-						>
-							<div className="flex justify-between items-start mb-4">
-								<div>
-									<h3 className="text-xl font-bold text-gray-900">
-										{profile.name}
-									</h3>
-									<p className="text-gray-600">
-										{profile.basicInfo.firstName} {profile.basicInfo.lastName}
-									</p>
-								</div>
-								<button className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100">
-									<Edit3 className="h-4 w-4" />
-								</button>
-							</div>
-
-							<div className="grid md:grid-cols-2 gap-4 text-sm">
-								<div className="flex items-center space-x-2 text-gray-600">
-									<Mail className="h-4 w-4" />
-									<span>{profile.basicInfo.email}</span>
-								</div>
-								<div className="flex items-center space-x-2 text-gray-600">
-									<Phone className="h-4 w-4" />
-									<span>{profile.basicInfo.phone}</span>
-								</div>
-								<div className="flex items-center space-x-2 text-gray-600">
-									<MapPin className="h-4 w-4" />
-									<span>
-										{profile.address.city}, {profile.address.state}
-									</span>
-								</div>
-								<div className="flex items-center space-x-2 text-gray-600">
-									<LinkIcon className="h-4 w-4" />
-									<span>{profile.socialLinks.website || 'No website'}</span>
-								</div>
-							</div>
-						</div>
+						<ProfileCard key={profile.id} data={profile} />
 					))}
 				</div>
 			</div>

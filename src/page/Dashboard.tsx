@@ -1,3 +1,4 @@
+import { useEffect } from 'react'; // Import useEffect
 import {
 	Box,
 	Chrome,
@@ -7,12 +8,26 @@ import {
 } from 'lucide-react';
 import {useNavigate} from 'react-router';
 import {ROUTES} from '../constants';
-import {useAppSelector} from '../hooks/redux';
+import {useAppDispatch, useAppSelector} from '../hooks/redux'; // Keep Redux hooks
 import ProfileCard from '../components/dashboard/ProfileCard';
+import { fetchProfiles } from '../redux/slice/profileSlice'; // Import fetchProfiles thunk
 
 const Dashboard = () => {
 	const navigate = useNavigate();
-	const profiles = useAppSelector((state) => state.profile.profiles);
+	const dispatch = useAppDispatch(); // Get dispatch
+	const { profiles, loading, error } = useAppSelector((state) => state.profile); // Get profiles, loading, and error from Redux state
+
+	useEffect(() => {
+		dispatch(fetchProfiles()); // Dispatch fetchProfiles when component mounts
+	}, [dispatch]); // Include dispatch in dependency array
+
+	if (loading) {
+		return <div className="min-h-screen bg-gray-50 flex justify-center items-center">Loading profiles...</div>;
+	}
+
+	if (error) {
+		return <div className="min-h-screen bg-gray-50 flex justify-center items-center text-red-600">Error: {error}</div>;
+	}
 
 	return (
 		<div className="min-h-screen bg-gray-50">

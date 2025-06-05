@@ -4,7 +4,7 @@ import {useAppDispatch} from '../../hooks/redux';
 import {deleteProfile as deleteProfileReducer} from '../../redux/slice/profileSlice';
 import {useNavigate} from 'react-router';
 import {ROUTES} from '../../constants';
-import {deleteProfile} from '../../firebaseService';
+import {deleteProfile} from '../../firebase/firebaseService';
 
 interface ProfileCardProps {
 	data: Profile;

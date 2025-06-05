@@ -5,7 +5,7 @@ import {useNavigate, useLocation} from 'react-router';
 import {ROUTES} from '../constants';
 import {useAppDispatch, useAppSelector} from '../hooks/redux';
 import {addProfile, updateProfile} from '../redux/slice/profileSlice';
-import {saveProfile} from '../firebaseService';
+import {saveProfile} from '../firebase/firebaseService';
 
 const AddProfile = () => {
 	const navigate = useNavigate();

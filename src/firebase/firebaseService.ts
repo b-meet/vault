@@ -7,21 +7,9 @@ import {
 	doc,
 	setDoc,
 } from 'firebase/firestore';
-import type {Profile} from './types';
-import {initializeApp} from 'firebase/app';
+import type {Profile} from '../types';
+import { app } from './firebaseConfig';
 
-const firebaseConfig = {
-	apiKey: 'AIzaSyA0lhvxR0ram2HsGZwWKr8zIeHDzSjHUm0',
-	authDomain: 'vault-f7da9.firebaseapp.com',
-	projectId: 'vault-f7da9',
-	storageBucket: 'vault-f7da9.firebasestorage.app',
-	messagingSenderId: '631285408172',
-	appId: '1:631285408172:web:8f6e80c96adbacaad05a09',
-	measurementId: 'G-NTXRMVJGH2',
-};
-
-export const app = initializeApp(firebaseConfig);
-// const analytics = getAnalytics(app);
 const db = getFirestore(app);
 
 export const saveProfile = async (profile: Profile): Promise<string> => {

@@ -1,7 +1,7 @@
 import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
 import type {PayloadAction} from '@reduxjs/toolkit';
 import type {Profile} from '../../types';
-import {getProfiles} from '../../firebaseService';
+import {getProfiles} from '../../firebase/firebaseService';
 
 interface ProfileState {
 	profiles: Profile[];

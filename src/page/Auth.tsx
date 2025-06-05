@@ -1,22 +1,76 @@
-import {useEffect, useState} from 'react';
-import {Box, Globe} from 'lucide-react';
-import {useLocation, useNavigate} from 'react-router';
-import {ROUTES} from '../constants';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { useEffect, useState } from 'react';
+import { Box, Globe } from 'lucide-react';
+import { useLocation, useNavigate } from 'react-router';
+import {
+	signInWithPopup,
+	GoogleAuthProvider,
+	createUserWithEmailAndPassword,
+	signInWithEmailAndPassword
+} from 'firebase/auth';
+import { ROUTES } from '../constants';
+import { auth } from '../firebase/firebaseConfig';
 
 const Auth = () => {
 	const location = useLocation();
 	const navigate = useNavigate();
 	const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin');
+	const [email, setEmail] = useState('');
+	const [password, setPassword] = useState('');
+	const [loading, setLoading] = useState(false);
+	const [error, setError] = useState('');
 
 	useEffect(() => {
-		const state = location.state as {isSignIn?: boolean};
+		const state = location.state as { isSignIn?: boolean };
 		if (state?.isSignIn !== undefined) {
 			setAuthMode(state.isSignIn ? 'signin' : 'signup');
 		}
 	}, [location.state]);
 
-	const handleAuth = () => {
-		navigate(ROUTES.DASHBOARD);
+	const handleEmailAuth = async (e: React.FormEvent) => {
+		e.preventDefault();
+		setLoading(true);
+		setError('');
+
+		try {
+			if (authMode === 'signin') {
+				await signInWithEmailAndPassword(auth, email, password);
+			} else {
+				await createUserWithEmailAndPassword(auth, email, password);
+			}
+			navigate(ROUTES.DASHBOARD);
+		} catch (error: any) {
+			setError(error.message);
+		} finally {
+			setLoading(false);
+		}
+	};
+
+	const handleGoogleAuth = async () => {
+		setLoading(true);
+		setError('');
+
+		try {
+			const provider = new GoogleAuthProvider();
+			// Optional: Add scopes if needed
+			// provider.addScope('profile');
+			// provider.addScope('email');
+
+			const result = await signInWithPopup(auth, provider);
+			console.log(result, 'google');
+			
+			// Optional: Get additional user info
+			// const credential = GoogleAuthProvider.credentialFromResult(result);
+			// const token = credential?.accessToken;
+			// const user = result.user;
+
+			navigate(ROUTES.DASHBOARD);
+		} catch (error: any) {
+			console.error('Google sign-in error:', error);
+			setError(error.message);
+		} finally {
+			setLoading(false);
+		}
 	};
 
 	return (
@@ -34,15 +88,24 @@ const Auth = () => {
 					</p>
 				</div>
 
-				<form className="space-y-4">
+				{error && (
+					<div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+						{error}
+					</div>
+				)}
+
+				<form onSubmit={handleEmailAuth} className="space-y-4">
 					<div>
 						<label className="block text-sm font-medium text-gray-700 mb-2">
 							Email
 						</label>
 						<input
 							type="email"
+							value={email}
+							onChange={(e) => setEmail(e.target.value)}
 							className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
 							placeholder="your@email.com"
+							required
 						/>
 					</div>
 					<div>
@@ -51,17 +114,25 @@ const Auth = () => {
 						</label>
 						<input
 							type="password"
+							value={password}
+							onChange={(e) => setPassword(e.target.value)}
 							className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
 							placeholder="••••••••"
+							required
 						/>
 					</div>
 
 					<button
-						type="button"
-						onClick={handleAuth}
-						className="w-full py-3 main-gradient text-white font-semibold rounded-lg hover:bg-indigo-700 transition-colors"
+						type="submit"
+						disabled={loading}
+						className="w-full py-3 main-gradient text-white font-semibold rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
 					>
-						{authMode === 'signin' ? 'Sign In' : 'Create Account'}
+						{loading
+							? 'Loading...'
+							: authMode === 'signin'
+								? 'Sign In'
+								: 'Create Account'
+						}
 					</button>
 
 					<div className="relative my-6">
@@ -77,10 +148,12 @@ const Auth = () => {
 
 					<button
 						type="button"
-						className="w-full py-3 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center space-x-2"
+						onClick={handleGoogleAuth}
+						disabled={loading}
+						className="w-full py-3 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
 					>
 						<Globe className="h-5 w-5" />
-						<span>Google</span>
+						<span>{loading ? 'Loading...' : 'Google'}</span>
 					</button>
 				</form>
 
@@ -93,6 +166,7 @@ const Auth = () => {
 							setAuthMode(authMode === 'signin' ? 'signup' : 'signin')
 						}
 						className="text-indigo-600 hover:text-indigo-700 font-medium"
+						disabled={loading}
 					>
 						{authMode === 'signin' ? 'Sign up' : 'Sign in'}
 					</button>

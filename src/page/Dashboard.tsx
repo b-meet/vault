@@ -1,94 +1,287 @@
-import {useEffect} from 'react';
-import {Box, Chrome, Plus, Settings, User} from 'lucide-react';
-import {useNavigate} from 'react-router';
-import {ROUTES} from '../constants';
-import {useAppDispatch, useAppSelector} from '../hooks/redux';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router';
+import { LogOut, User, Chrome, Settings, Box, Plus, ChevronDown, Bell } from 'lucide-react';
+import { ROUTES } from '../constants';
+import { useAppDispatch, useAppSelector } from '../hooks/redux';
+import { logout } from '../redux/thunk/userThunk';
+import { fetchProfiles } from '../redux/slice/profileSlice';
 import ProfileCard from '../components/dashboard/ProfileCard';
-import {fetchProfiles} from '../redux/slice/profileSlice';
 
-const Dashboard = () => {
-	const navigate = useNavigate();
+const Dashboard: React.FC = () => {
 	const dispatch = useAppDispatch();
-	const {profiles, loading, error} = useAppSelector((state) => state.profile);
+	const navigate = useNavigate();
+	const { profiles, loading, error } = useAppSelector((state) => state.profile);
+	const { user } = useAppSelector((state) => state.user);
+	const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
 	useEffect(() => {
 		dispatch(fetchProfiles());
 	}, [dispatch]);
 
+	useEffect(() => {
+		const handleClickOutside = (event: MouseEvent) => {
+			const target = event.target as Element;
+			if (!target.closest('.dropdown-container')) {
+				setIsDropdownOpen(false);
+			}
+		};
+
+		document.addEventListener('mousedown', handleClickOutside);
+		return () => document.removeEventListener('mousedown', handleClickOutside);
+	}, []);
+
 	if (loading) {
 		return (
-			<div className="min-h-screen bg-gray-50 flex justify-center items-center">
-				Loading profiles...
+			<div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex justify-center items-center">
+				<div className="flex flex-col items-center space-y-4">
+					<div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+					<p className="text-gray-600 font-medium">Loading profiles...</p>
+				</div>
 			</div>
 		);
 	}
 
 	if (error) {
 		return (
-			<div className="min-h-screen bg-gray-50 flex justify-center items-center text-red-600">
-				Error: {error}
+			<div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex justify-center items-center">
+				<div className="bg-white p-8 rounded-2xl shadow-lg border border-red-100">
+					<div className="text-red-600 font-semibold text-lg mb-2">Error Loading Dashboard</div>
+					<p className="text-gray-600">{error}</p>
+				</div>
 			</div>
 		);
 	}
 
+	const handleLogout = async () => {
+		try {
+			await dispatch(logout()).unwrap();
+			navigate(ROUTES.AUTH || '/auth');
+		} catch (error) {
+			console.error('Logout failed:', error);
+		}
+	};
+
+	const menuItems = [
+		{
+			icon: User,
+			label: 'Profile',
+			action: () => navigate(ROUTES.USER_PROFILE),
+		},
+		{
+			icon: Chrome,
+			label: 'Extensions',
+			action: () => navigate(ROUTES.EXTENTIONS),
+		},
+		{
+			icon: Settings,
+			label: 'Settings',
+			action: () => navigate(ROUTES.SETTINGS),
+		},
+		{
+			icon: LogOut,
+			label: 'Logout',
+			action: handleLogout,
+			danger: true,
+		},
+	];
+
 	return (
-		<div className="min-h-screen bg-gray-50">
-			<nav className="bg-white shadow-sm px-6 py-4 sticky top-0 z-50">
+		<div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
+			{/* Enhanced Header */}
+			<nav className="bg-white/80 backdrop-blur-md shadow-sm border-b border-gray-100 px-6 py-4 sticky top-0 z-50">
 				<div className="flex justify-between items-center">
-					<div className="flex items-center space-x-2">
-						<Box className="h-8 w-8 text-indigo-600" />
-						<span className="text-2xl font-bold text-gray-900">Vault</span>
+					<div className="flex items-center space-x-3">
+						<div className="p-2 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl">
+							<Box className="h-6 w-6 text-white" />
+						</div>
+						<span className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+							Vault
+						</span>
 					</div>
+
 					<div className="flex items-center space-x-4">
-						<button
-							onClick={() => navigate(ROUTES.EXTENTIONS)}
-							className="cursor-pointer p-2 text-gray-600 hover:text-gray-900 rounded-lg hover:bg-gray-100"
-						>
-							<Chrome className="h-5 w-5" />
+						{/* Notifications */}
+						<button className="relative p-2 text-gray-600 hover:text-gray-900 rounded-lg hover:bg-gray-100 transition-colors">
+							<Bell className="h-5 w-5" />
+							<span className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 rounded-full text-xs text-white flex items-center justify-center">
+								2
+							</span>
 						</button>
-						<button
-							onClick={() => navigate(ROUTES.SETTINGS)}
-							className="cursor-pointer p-2 text-gray-600 hover:text-gray-900 rounded-lg hover:bg-gray-100"
-						>
-							<Settings className="h-5 w-5" />
-						</button>
-						<div className="h-8 w-8 bg-indigo-600 rounded-full flex items-center justify-center">
+
+						{/* User Dropdown */}
+						<div className="relative dropdown-container">
 							<button
-								onClick={() => navigate(ROUTES.USER_PROFILE)}
-								className="cursor-pointer p-2"
+								onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+								className="flex items-center space-x-3 px-3 py-2 rounded-xl hover:bg-gray-100 transition-colors"
 							>
-								<User className="h-4 w-4 text-white" />
+								<div className="h-8 w-8 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full flex items-center justify-center">
+									<User className="h-4 w-4 text-white" />
+								</div>
+								<div className="hidden md:block text-left">
+									<div className="text-sm font-semibold text-gray-900">
+										{user?.displayName || 'User'}
+									</div>
+									<div className="text-xs text-gray-500">
+										{user?.email}
+									</div>
+								</div>
+								<ChevronDown className={`h-4 w-4 text-gray-500 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
 							</button>
+
+							{/* Dropdown Menu */}
+							{isDropdownOpen && (
+								<div className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-50">
+									<div className="px-4 py-3 border-b border-gray-100">
+										<div className="text-sm font-semibold text-gray-900">
+											{user?.displayName || user?.email}
+										</div>
+										<div className="text-xs text-gray-500">
+											{user?.email}
+										</div>
+									</div>
+
+									{menuItems.map((item, index) => {
+										const Icon = item.icon;
+										return (
+											<button
+												key={index}
+												onClick={() => {
+													item.action();
+													setIsDropdownOpen(false);
+												}}
+												className={`w-full flex items-center space-x-3 px-4 py-3 text-left hover:bg-gray-50 transition-colors ${item.danger ? 'text-red-600 hover:bg-red-50' : 'text-gray-700'
+													}`}
+											>
+												<Icon className="h-4 w-4" />
+												<span className="text-sm font-medium">{item.label}</span>
+											</button>
+										);
+									})}
+								</div>
+							)}
 						</div>
 					</div>
 				</div>
 			</nav>
 
-			<div className="max-w-4xl mx-auto px-6 py-8">
-				<div className="mb-8">
-					<h1 className="text-3xl font-bold text-gray-900 mb-2">Dashboard</h1>
-					<p className="text-gray-600">
-						You have {profiles.length} profile{profiles.length !== 1 ? 's' : ''}{' '}
-						saved
-					</p>
-				</div>
-
-				<div className="grid gap-6">
-					<button
-						onClick={() => navigate(ROUTES.ADD_PROFILE)}
-						className="bg-white p-6 rounded-xl shadow-sm border-2 border-dashed border-gray-300 hover:border-indigo-400 cursor-pointer transition-colors"
-					>
-						<div className="flex items-center justify-center space-x-3 text-gray-600">
-							<Plus className="h-6 w-6" />
-							<span className="font-medium">Add New Profile</span>
+			{/* Enhanced Main Content */}
+			<main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+				<div className="max-w-4xl mx-auto px-6 py-8">
+					{/* Header Section */}
+					<div className="mb-8">
+						<h1 className="text-4xl font-bold text-gray-900 mb-3">Dashboard</h1>
+						<div className="flex items-center space-x-4 text-gray-600">
+							<span className="flex items-center space-x-2">
+								<div className="h-2 w-2 bg-green-500 rounded-full"></div>
+								<span>
+									{profiles.length} profile{profiles.length !== 1 ? 's' : ''} saved
+								</span>
+							</span>
+							<span>•</span>
+							<span>Last updated: Just now</span>
 						</div>
-					</button>
+					</div>
 
-					{profiles.map((profile) => (
-						<ProfileCard key={profile.id} data={profile} />
-					))}
+					{/* Welcome Card */}
+					<div className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-2xl shadow-xl p-8 mb-8 text-white">
+						<div className="flex items-center justify-between">
+							<div>
+								<h2 className="text-2xl font-bold mb-3">
+									Welcome back, {user?.displayName || user?.email?.split('@')[0]}! 👋
+								</h2>
+								<p className="text-indigo-100 leading-relaxed max-w-2xl">
+									Your secure vault is ready to use. The session management system is actively
+									monitoring your authentication status and will automatically refresh your tokens
+									and handle session timeouts.
+								</p>
+							</div>
+							<div className="hidden lg:block">
+								<div className="w-24 h-24 bg-white/20 rounded-full flex items-center justify-center">
+									<Box className="h-12 w-12 text-white" />
+								</div>
+							</div>
+						</div>
+					</div>
+
+					{/* Stats Cards */}
+					<div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+						<div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+							<div className="flex items-center justify-between">
+								<div>
+									<p className="text-sm font-medium text-gray-600">Total Profiles</p>
+									<p className="text-2xl font-bold text-gray-900">{profiles.length}</p>
+								</div>
+								<div className="h-12 w-12 bg-blue-100 rounded-lg flex items-center justify-center">
+									<User className="h-6 w-6 text-blue-600" />
+								</div>
+							</div>
+						</div>
+
+						<div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+							<div className="flex items-center justify-between">
+								<div>
+									<p className="text-sm font-medium text-gray-600">Active Sessions</p>
+									<p className="text-2xl font-bold text-gray-900">1</p>
+								</div>
+								<div className="h-12 w-12 bg-green-100 rounded-lg flex items-center justify-center">
+									<div className="h-6 w-6 bg-green-500 rounded-full"></div>
+								</div>
+							</div>
+						</div>
+
+						<div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+							<div className="flex items-center justify-between">
+								<div>
+									<p className="text-sm font-medium text-gray-600">Storage Used</p>
+									<p className="text-2xl font-bold text-gray-900">2.4 MB</p>
+								</div>
+								<div className="h-12 w-12 bg-purple-100 rounded-lg flex items-center justify-center">
+									<Box className="h-6 w-6 text-purple-600" />
+								</div>
+							</div>
+						</div>
+					</div>
+
+					{/* Profiles Section */}
+					<div className="space-y-6">
+						<div className="flex items-center justify-between">
+							<h3 className="text-xl font-semibold text-gray-900">Your Profiles</h3>
+							<button
+								onClick={() => navigate(ROUTES.ADD_PROFILE)}
+								className="flex items-center space-x-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium"
+							>
+								<Plus className="h-4 w-4" />
+								<span>Add Profile</span>
+							</button>
+						</div>
+
+						<div className="grid gap-6">
+							{profiles.map((profile) => (
+								<div key={profile.id} className="transform hover:scale-[1.02] transition-transform">
+									<ProfileCard data={profile} />
+								</div>
+							))}
+
+							{profiles.length === 0 && (
+								<div className="text-center py-12">
+									<div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+										<User className="h-8 w-8 text-gray-400" />
+									</div>
+									<h3 className="text-lg font-semibold text-gray-900 mb-2">No profiles yet</h3>
+									<p className="text-gray-600 mb-6">Get started by creating your first profile</p>
+									<button
+										onClick={() => navigate(ROUTES.ADD_PROFILE)}
+										className="inline-flex items-center space-x-2 px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium"
+									>
+										<Plus className="h-5 w-5" />
+										<span>Create Your First Profile</span>
+									</button>
+								</div>
+							)}
+						</div>
+					</div>
 				</div>
-			</div>
+			</main>
 		</div>
 	);
 };

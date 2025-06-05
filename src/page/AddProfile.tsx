@@ -1,11 +1,11 @@
-import {useState, useEffect} from 'react';
-import type {Profile} from '../types';
-import {ArrowRight} from 'lucide-react';
-import {useNavigate, useLocation} from 'react-router';
-import {ROUTES} from '../constants';
-import {useAppDispatch, useAppSelector} from '../hooks/redux';
-import {addProfile, updateProfile} from '../redux/slice/profileSlice';
-import {saveProfile} from '../firebase/firebaseService';
+import { useState, useEffect } from 'react';
+import type { Profile } from '../types';
+import { ArrowLeft, Save, User, MapPin, Globe, Calendar, Mail, Phone, Building, Link } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router';
+import { ROUTES } from '../constants';
+import { useAppDispatch, useAppSelector } from '../hooks/redux';
+import { addProfile, updateProfile } from '../redux/slice/profileSlice';
+import { saveProfile } from '../firebase/firebaseService';
 
 const AddProfile = () => {
 	const navigate = useNavigate();
@@ -13,6 +13,7 @@ const AddProfile = () => {
 	const location = useLocation();
 	const profiles = useAppSelector((state) => state.profile.profiles);
 	const isEditing = location.search.includes('id=');
+	const [isSaving, setIsSaving] = useState(false);
 
 	const [profileData, setProfileData] = useState<Profile>({
 		name: '',
@@ -53,77 +54,92 @@ const AddProfile = () => {
 	}, [isEditing, location.search, profiles, navigate]);
 
 	const handleSave = async () => {
-		if (isEditing) {
-			try {
+		setIsSaving(true);
+		try {
+			if (isEditing) {
 				if (profileData.id) {
 					await saveProfile(profileData);
 					dispatch(updateProfile(profileData));
 				} else {
 					console.error('Missing profile ID for update');
 				}
-			} catch (error) {
-				console.error('Failed to update profile in Firestore:', error);
-			}
-		} else {
-			try {
+			} else {
 				const docId = await saveProfile(profileData);
-				dispatch(addProfile({...profileData, id: docId}));
-			} catch (error) {
-				console.error('Failed to save new profile:', error);
+				dispatch(addProfile({ ...profileData, id: docId }));
 			}
+			navigate(ROUTES.DASHBOARD);
+		} catch (error) {
+			console.error('Failed to save profile:', error);
+		} finally {
+			setIsSaving(false);
 		}
-		navigate(ROUTES.DASHBOARD);
 	};
 
+	const isFormValid = profileData.name.trim() !== '' &&
+		(profileData.basicInfo.firstName.trim() !== '' || profileData.basicInfo.email.trim() !== '');
+
 	return (
-		<div className="min-h-screen bg-gray-50">
-			<nav className="bg-white shadow-sm px-6 py-4 sticky top-0 z-50">
-				<div className="flex justify-between items-center">
+		<div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
+			{/* Enhanced Header */}
+			<nav className="bg-white/80 backdrop-blur-md shadow-sm border-b border-gray-100 px-6 py-4 sticky top-0 z-50">
+				<div className="flex justify-between items-center max-w-4xl mx-auto">
 					<button
 						onClick={() => navigate(ROUTES.DASHBOARD)}
-						className="flex items-center space-x-2 text-gray-600 hover:text-gray-900"
+						className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors"
 					>
-						<ArrowRight className="h-5 w-5 rotate-180" />
-						<span>Back to Dashboard</span>
+						<ArrowLeft className="h-5 w-5" />
+						<span className="font-medium">Back to Dashboard</span>
 					</button>
-					<div className="flex items-center space-x-4">
-						<button
-							onClick={handleSave}
-							className="px-4 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700"
-						>
-							{isEditing ? 'Update Profile' : 'Save Profile'}
-						</button>
-					</div>
+					<button
+						onClick={handleSave}
+						disabled={!isFormValid || isSaving}
+						className="flex items-center space-x-2 px-6 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-medium rounded-lg hover:from-indigo-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl"
+					>
+						<Save className="h-4 w-4" />
+						<span>{isSaving ? 'Saving...' : (isEditing ? 'Update Profile' : 'Save Profile')}</span>
+					</button>
 				</div>
 			</nav>
 
-			<div className="max-w-2xl mx-auto px-6 py-8">
-				<div className="bg-white rounded-xl shadow-sm p-8">
-					<div className="mb-8">
-						<h1 className="text-2xl font-bold text-gray-900 mb-2">
-							{isEditing ? 'Edit Profile' : 'Create New Profile'}
-						</h1>
+			<div className="max-w-4xl mx-auto px-6 py-8">
+				{/* Header Section */}
+				<div className="mb-8">
+					<h1 className="text-4xl font-bold text-gray-900 mb-4">
+						{isEditing ? 'Edit Profile' : 'Create New Profile'}
+					</h1>
+					<div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+						<label className="block text-sm font-medium text-gray-700 mb-2">
+							Profile Name *
+						</label>
 						<input
 							type="text"
 							value={profileData.name}
 							onChange={(e) =>
-								setProfileData({...profileData, name: e.target.value})
+								setProfileData({ ...profileData, name: e.target.value })
 							}
-							className="text-lg font-medium text-gray-500 bg-gray-100 py-1 px-3 rounded-lg outline-0"
-							placeholder="Add profile name"
+							className="w-full text-2xl font-semibold text-gray-900 bg-gray-50 border border-gray-200 py-3 px-4 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+							placeholder="Enter a memorable name for this profile"
 						/>
 					</div>
+				</div>
 
-					<div className="space-y-8">
-						{/* Basic Info */}
-						<div>
-							<h3 className="text-lg font-semibold text-gray-900 mb-4">
-								Basic Information
-							</h3>
-							<div className="grid md:grid-cols-2 gap-4">
+				<div className="space-y-8">
+					{/* Basic Information Card */}
+					<div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+						<div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-4 border-b border-gray-100">
+							<div className="flex items-center space-x-3">
+								<div className="p-2 bg-blue-100 rounded-lg">
+									<User className="h-5 w-5 text-blue-600" />
+								</div>
+								<h3 className="text-xl font-semibold text-gray-900">Basic Information</h3>
+							</div>
+						</div>
+						<div className="p-6">
+							<div className="grid md:grid-cols-2 gap-6">
 								<div>
-									<label className="block text-sm font-medium text-gray-700 mb-2">
-										First Name
+									<label className="flex items-center space-x-2 text-sm font-medium text-gray-700 mb-2">
+										<User className="h-4 w-4" />
+										<span>First Name</span>
 									</label>
 									<input
 										type="text"
@@ -137,12 +153,14 @@ const AddProfile = () => {
 												},
 											})
 										}
-										className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+										className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+										placeholder="John"
 									/>
 								</div>
 								<div>
-									<label className="block text-sm font-medium text-gray-700 mb-2">
-										Last Name
+									<label className="flex items-center space-x-2 text-sm font-medium text-gray-700 mb-2">
+										<User className="h-4 w-4" />
+										<span>Last Name</span>
 									</label>
 									<input
 										type="text"
@@ -156,12 +174,14 @@ const AddProfile = () => {
 												},
 											})
 										}
-										className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+										className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+										placeholder="Doe"
 									/>
 								</div>
 								<div>
-									<label className="block text-sm font-medium text-gray-700 mb-2">
-										Email
+									<label className="flex items-center space-x-2 text-sm font-medium text-gray-700 mb-2">
+										<Mail className="h-4 w-4" />
+										<span>Email</span>
 									</label>
 									<input
 										type="email"
@@ -175,12 +195,14 @@ const AddProfile = () => {
 												},
 											})
 										}
-										className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+										className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+										placeholder="john@example.com"
 									/>
 								</div>
 								<div>
-									<label className="block text-sm font-medium text-gray-700 mb-2">
-										Phone
+									<label className="flex items-center space-x-2 text-sm font-medium text-gray-700 mb-2">
+										<Phone className="h-4 w-4" />
+										<span>Phone</span>
 									</label>
 									<input
 										type="tel"
@@ -194,12 +216,14 @@ const AddProfile = () => {
 												},
 											})
 										}
-										className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+										className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+										placeholder="+1 (555) 123-4567"
 									/>
 								</div>
 								<div className="md:col-span-2">
-									<label className="block text-sm font-medium text-gray-700 mb-2">
-										Date of Birth
+									<label className="flex items-center space-x-2 text-sm font-medium text-gray-700 mb-2">
+										<Calendar className="h-4 w-4" />
+										<span>Date of Birth</span>
 									</label>
 									<input
 										type="date"
@@ -213,21 +237,29 @@ const AddProfile = () => {
 												},
 											})
 										}
-										className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+										className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
 									/>
 								</div>
 							</div>
 						</div>
+					</div>
 
-						{/* Address */}
-						<div>
-							<h3 className="text-lg font-semibold text-gray-900 mb-4">
-								Address
-							</h3>
-							<div className="space-y-4">
+					{/* Address Card */}
+					<div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+						<div className="bg-gradient-to-r from-green-50 to-emerald-50 px-6 py-4 border-b border-gray-100">
+							<div className="flex items-center space-x-3">
+								<div className="p-2 bg-green-100 rounded-lg">
+									<MapPin className="h-5 w-5 text-green-600" />
+								</div>
+								<h3 className="text-xl font-semibold text-gray-900">Address Information</h3>
+							</div>
+						</div>
+						<div className="p-6">
+							<div className="space-y-6">
 								<div>
-									<label className="block text-sm font-medium text-gray-700 mb-2">
-										Street Address
+									<label className="flex items-center space-x-2 text-sm font-medium text-gray-700 mb-2">
+										<Building className="h-4 w-4" />
+										<span>Street Address</span>
 									</label>
 									<input
 										type="text"
@@ -241,13 +273,15 @@ const AddProfile = () => {
 												},
 											})
 										}
-										className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+										className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+										placeholder="123 Main Street, Apt 4B"
 									/>
 								</div>
-								<div className="grid md:grid-cols-3 gap-4">
+								<div className="grid md:grid-cols-3 gap-6">
 									<div>
-										<label className="block text-sm font-medium text-gray-700 mb-2">
-											City
+										<label className="flex items-center space-x-2 text-sm font-medium text-gray-700 mb-2">
+											<MapPin className="h-4 w-4" />
+											<span>City</span>
 										</label>
 										<input
 											type="text"
@@ -261,12 +295,14 @@ const AddProfile = () => {
 													},
 												})
 											}
-											className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+											className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+											placeholder="New York"
 										/>
 									</div>
 									<div>
-										<label className="block text-sm font-medium text-gray-700 mb-2">
-											State
+										<label className="flex items-center space-x-2 text-sm font-medium text-gray-700 mb-2">
+											<MapPin className="h-4 w-4" />
+											<span>State</span>
 										</label>
 										<input
 											type="text"
@@ -280,12 +316,14 @@ const AddProfile = () => {
 													},
 												})
 											}
-											className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+											className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+											placeholder="NY"
 										/>
 									</div>
 									<div>
-										<label className="block text-sm font-medium text-gray-700 mb-2">
-											ZIP Code
+										<label className="flex items-center space-x-2 text-sm font-medium text-gray-700 mb-2">
+											<Building className="h-4 w-4" />
+											<span>ZIP Code</span>
 										</label>
 										<input
 											type="text"
@@ -299,13 +337,15 @@ const AddProfile = () => {
 													},
 												})
 											}
-											className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+											className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+											placeholder="10001"
 										/>
 									</div>
 								</div>
 								<div>
-									<label className="block text-sm font-medium text-gray-700 mb-2">
-										Country
+									<label className="flex items-center space-x-2 text-sm font-medium text-gray-700 mb-2">
+										<Globe className="h-4 w-4" />
+										<span>Country</span>
 									</label>
 									<input
 										type="text"
@@ -319,21 +359,30 @@ const AddProfile = () => {
 												},
 											})
 										}
-										className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+										className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+										placeholder="United States"
 									/>
 								</div>
 							</div>
 						</div>
+					</div>
 
-						{/* Social Links */}
-						<div>
-							<h3 className="text-lg font-semibold text-gray-900 mb-4">
-								Social Links
-							</h3>
-							<div className="space-y-4">
+					{/* Social Links Card */}
+					<div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+						<div className="bg-gradient-to-r from-purple-50 to-pink-50 px-6 py-4 border-b border-gray-100">
+							<div className="flex items-center space-x-3">
+								<div className="p-2 bg-purple-100 rounded-lg">
+									<Link className="h-5 w-5 text-purple-600" />
+								</div>
+								<h3 className="text-xl font-semibold text-gray-900">Social Links</h3>
+							</div>
+						</div>
+						<div className="p-6">
+							<div className="space-y-6">
 								<div>
-									<label className="block text-sm font-medium text-gray-700 mb-2">
-										LinkedIn
+									<label className="flex items-center space-x-2 text-sm font-medium text-gray-700 mb-2">
+										<div className="h-4 w-4 bg-blue-600 rounded"></div>
+										<span>LinkedIn</span>
 									</label>
 									<input
 										type="text"
@@ -347,13 +396,14 @@ const AddProfile = () => {
 												},
 											})
 										}
-										className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+										className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
 										placeholder="linkedin.com/in/username"
 									/>
 								</div>
 								<div>
-									<label className="block text-sm font-medium text-gray-700 mb-2">
-										Twitter
+									<label className="flex items-center space-x-2 text-sm font-medium text-gray-700 mb-2">
+										<div className="h-4 w-4 bg-sky-400 rounded"></div>
+										<span>Twitter</span>
 									</label>
 									<input
 										type="text"
@@ -367,13 +417,14 @@ const AddProfile = () => {
 												},
 											})
 										}
-										className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+										className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
 										placeholder="@username"
 									/>
 								</div>
 								<div>
-									<label className="block text-sm font-medium text-gray-700 mb-2">
-										GitHub
+									<label className="flex items-center space-x-2 text-sm font-medium text-gray-700 mb-2">
+										<div className="h-4 w-4 bg-gray-900 rounded"></div>
+										<span>GitHub</span>
 									</label>
 									<input
 										type="text"
@@ -387,13 +438,14 @@ const AddProfile = () => {
 												},
 											})
 										}
-										className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+										className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
 										placeholder="github.com/username"
 									/>
 								</div>
 								<div>
-									<label className="block text-sm font-medium text-gray-700 mb-2">
-										Website
+									<label className="flex items-center space-x-2 text-sm font-medium text-gray-700 mb-2">
+										<Globe className="h-4 w-4" />
+										<span>Website</span>
 									</label>
 									<input
 										type="text"
@@ -407,12 +459,30 @@ const AddProfile = () => {
 												},
 											})
 										}
-										className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+										className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
 										placeholder="yourwebsite.com"
 									/>
 								</div>
 							</div>
 						</div>
+					</div>
+
+					{/* Action Buttons */}
+					<div className="flex justify-between items-center pt-6">
+						<button
+							onClick={() => navigate(ROUTES.DASHBOARD)}
+							className="px-6 py-3 text-gray-600 hover:text-gray-900 font-medium rounded-xl hover:bg-gray-100 transition-colors"
+						>
+							Cancel
+						</button>
+						<button
+							onClick={handleSave}
+							disabled={!isFormValid || isSaving}
+							className="flex items-center space-x-2 px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-medium rounded-xl hover:from-indigo-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl"
+						>
+							<Save className="h-5 w-5" />
+							<span>{isSaving ? 'Saving...' : (isEditing ? 'Update Profile' : 'Save Profile')}</span>
+						</button>
 					</div>
 				</div>
 			</div>

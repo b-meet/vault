@@ -1,24 +1,21 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from 'react';
 import { Box, Globe } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router';
-import {
-	signInWithPopup,
-	GoogleAuthProvider,
-	createUserWithEmailAndPassword,
-	signInWithEmailAndPassword
-} from 'firebase/auth';
 import { ROUTES } from '../constants';
-import { auth } from '../firebase/firebaseConfig';
+import { useAppDispatch, useAppSelector } from '../hooks/redux';
+import { clearError } from '../redux/slice/userSlice';
+import { loginWithEmail, loginWithGoogle, signupWithEmail } from '../redux/thunk/userThunk';
 
 const Auth = () => {
 	const location = useLocation();
 	const navigate = useNavigate();
+	const dispatch = useAppDispatch();
+	const { loading, error, isAuthenticated } = useAppSelector((state) => state.user);
+
 	const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin');
 	const [email, setEmail] = useState('');
 	const [password, setPassword] = useState('');
-	const [loading, setLoading] = useState(false);
-	const [error, setError] = useState('');
+	const [displayName, setDisplayName] = useState('');
 
 	useEffect(() => {
 		const state = location.state as { isSignIn?: boolean };
@@ -27,50 +24,39 @@ const Auth = () => {
 		}
 	}, [location.state]);
 
+	useEffect(() => {
+		if (isAuthenticated) {
+			navigate(ROUTES.DASHBOARD);
+		}
+	}, [isAuthenticated, navigate]);
+
+	useEffect(() => {
+		dispatch(clearError());
+	}, [authMode, dispatch]);
+
 	const handleEmailAuth = async (e: React.FormEvent) => {
 		e.preventDefault();
-		setLoading(true);
-		setError('');
 
-		try {
-			if (authMode === 'signin') {
-				await signInWithEmailAndPassword(auth, email, password);
-			} else {
-				await createUserWithEmailAndPassword(auth, email, password);
-			}
-			navigate(ROUTES.DASHBOARD);
-		} catch (error: any) {
-			setError(error.message);
-		} finally {
-			setLoading(false);
+		if (authMode === 'signin') {
+			dispatch(loginWithEmail({ email, password }));
+		} else {
+			dispatch(signupWithEmail({
+				email,
+				password,
+				...(displayName && { displayName })
+			}));
 		}
 	};
 
 	const handleGoogleAuth = async () => {
-		setLoading(true);
-		setError('');
+		dispatch(loginWithGoogle());
+	};
 
-		try {
-			const provider = new GoogleAuthProvider();
-			// Optional: Add scopes if needed
-			// provider.addScope('profile');
-			// provider.addScope('email');
-
-			const result = await signInWithPopup(auth, provider);
-			console.log(result, 'google');
-			
-			// Optional: Get additional user info
-			// const credential = GoogleAuthProvider.credentialFromResult(result);
-			// const token = credential?.accessToken;
-			// const user = result.user;
-
-			navigate(ROUTES.DASHBOARD);
-		} catch (error: any) {
-			console.error('Google sign-in error:', error);
-			setError(error.message);
-		} finally {
-			setLoading(false);
-		}
+	const handleModeSwitch = () => {
+		setAuthMode(authMode === 'signin' ? 'signup' : 'signin');
+		setEmail('');
+		setPassword('');
+		setDisplayName('');
 	};
 
 	return (
@@ -95,6 +81,21 @@ const Auth = () => {
 				)}
 
 				<form onSubmit={handleEmailAuth} className="space-y-4">
+					{authMode === 'signup' && (
+						<div>
+							<label className="block text-sm font-medium text-gray-700 mb-2">
+								Display Name (Optional)
+							</label>
+							<input
+								type="text"
+								value={displayName}
+								onChange={(e) => setDisplayName(e.target.value)}
+								className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+								placeholder="Your Name"
+							/>
+						</div>
+					)}
+
 					<div>
 						<label className="block text-sm font-medium text-gray-700 mb-2">
 							Email
@@ -106,8 +107,10 @@ const Auth = () => {
 							className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
 							placeholder="your@email.com"
 							required
+							disabled={loading}
 						/>
 					</div>
+
 					<div>
 						<label className="block text-sm font-medium text-gray-700 mb-2">
 							Password
@@ -119,12 +122,14 @@ const Auth = () => {
 							className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
 							placeholder="••••••••"
 							required
+							disabled={loading}
+							minLength={6}
 						/>
 					</div>
 
 					<button
 						type="submit"
-						disabled={loading}
+						disabled={loading || !email || !password}
 						className="w-full py-3 main-gradient text-white font-semibold rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
 					>
 						{loading
@@ -162,9 +167,7 @@ const Auth = () => {
 						? "Don't have an account? "
 						: 'Already have an account? '}
 					<button
-						onClick={() =>
-							setAuthMode(authMode === 'signin' ? 'signup' : 'signin')
-						}
+						onClick={handleModeSwitch}
 						className="text-indigo-600 hover:text-indigo-700 font-medium"
 						disabled={loading}
 					>

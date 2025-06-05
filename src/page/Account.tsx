@@ -37,8 +37,6 @@ const Account: React.FC = () => {
 
 	const handleSave = () => {
 		setIsEditing(false);
-		// Save logic would go here
-		console.log('Saving account data:', accountData);
 	};
 
 	return (
@@ -72,7 +70,7 @@ const Account: React.FC = () => {
 						) : (
 							<button
 								onClick={() => setIsEditing(true)}
-									className="cursor-pointer px-4 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700"
+								className="cursor-pointer px-4 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700"
 							>
 								Edit Profile
 							</button>

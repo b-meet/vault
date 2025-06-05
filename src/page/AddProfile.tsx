@@ -5,7 +5,7 @@ import {useNavigate, useLocation} from 'react-router';
 import {ROUTES} from '../constants';
 import {useAppDispatch, useAppSelector} from '../hooks/redux';
 import {addProfile, updateProfile} from '../redux/slice/profileSlice';
-import { saveProfile } from '../firebaseService'; // Import saveProfile from the new service file
+import {saveProfile} from '../firebaseService';
 
 const AddProfile = () => {
 	const navigate = useNavigate();
@@ -15,7 +15,6 @@ const AddProfile = () => {
 	const isEditing = location.search.includes('id=');
 
 	const [profileData, setProfileData] = useState<Profile>({
-		id: Date.now().toString(),
 		name: '',
 		basicInfo: {
 			firstName: '',
@@ -53,19 +52,24 @@ const AddProfile = () => {
 		}
 	}, [isEditing, location.search, profiles, navigate]);
 
-	const handleSave = async () => { // Make handleSave async
+	const handleSave = async () => {
 		if (isEditing) {
-			dispatch(updateProfile(profileData));
-			// TODO: Implement update profile in Firebase
+			try {
+				if (profileData.id) {
+					await saveProfile(profileData);
+					dispatch(updateProfile(profileData));
+				} else {
+					console.error('Missing profile ID for update');
+				}
+			} catch (error) {
+				console.error('Failed to update profile in Firestore:', error);
+			}
 		} else {
 			try {
-				const docId = await saveProfile(profileData); // Use the imported saveProfile function
-				// Optionally, you can use the docId returned by saveProfile
-				console.log("Profile saved to Firestore with ID:", docId);
-				dispatch(addProfile({...profileData, id: docId})); // Dispatch with Firestore ID
+				const docId = await saveProfile(profileData);
+				dispatch(addProfile({...profileData, id: docId}));
 			} catch (error) {
-				console.error("Failed to save profile to Firestore:", error);
-				// Handle the error appropriately, e.g., show an error message to the user
+				console.error('Failed to save new profile:', error);
 			}
 		}
 		navigate(ROUTES.DASHBOARD);

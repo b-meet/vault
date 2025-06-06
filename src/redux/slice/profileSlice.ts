@@ -1,7 +1,7 @@
 import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
 import type {PayloadAction} from '@reduxjs/toolkit';
 import type {Profile} from '../../types';
-import {getProfiles} from '../../firebase/firebaseService';
+import {getProfiles, getProfilesByUserId} from '../../firebase/firebaseService';
 
 interface ProfileState {
 	profiles: Profile[];
@@ -22,6 +22,18 @@ const fetchProfiles = createAsyncThunk(
 	async (_, {rejectWithValue}) => {
 		try {
 			const profiles = await getProfiles();
+			return profiles;
+		} catch (error: unknown) {
+			return rejectWithValue((error as Error).message);
+		}
+	}
+);
+
+const fetchProfilesByUserId = createAsyncThunk(
+	'profiles/fetchProfilesByUserId',
+	async (userId: string, {rejectWithValue}) => {
+		try {
+			const profiles = await getProfilesByUserId(userId);
 			return profiles;
 		} catch (error: unknown) {
 			return rejectWithValue((error as Error).message);
@@ -78,6 +90,21 @@ const profileSlice = createSlice({
 			.addCase(fetchProfiles.rejected, (state, action) => {
 				state.loading = false;
 				state.error = action.payload as string;
+			})
+			.addCase(fetchProfilesByUserId.pending, (state) => {
+				state.loading = true;
+				state.error = null;
+			})
+			.addCase(
+				fetchProfilesByUserId.fulfilled,
+				(state, action: PayloadAction<Profile[]>) => {
+					state.loading = false;
+					state.profiles = action.payload;
+				}
+			)
+			.addCase(fetchProfilesByUserId.rejected, (state, action) => {
+				state.loading = false;
+				state.error = action.payload as string;
 			});
 	},
 });
@@ -90,5 +117,5 @@ export const {
 	resetProfiles,
 } = profileSlice.actions;
 
-export {fetchProfiles, type ProfileState};
+export {fetchProfiles, fetchProfilesByUserId, type ProfileState};
 export default profileSlice.reducer;

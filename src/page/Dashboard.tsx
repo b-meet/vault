@@ -4,7 +4,7 @@ import {LogOut, User, Chrome, Box, Plus, ChevronDown} from 'lucide-react';
 import {ROUTES} from '../constants';
 import {useAppDispatch, useAppSelector} from '../hooks/redux';
 import {logout} from '../redux/thunk/userThunk';
-import {fetchProfiles} from '../redux/slice/profileSlice';
+import {fetchProfilesByUserId} from '../redux/slice/profileSlice';
 import ProfileCard from '../components/dashboard/ProfileCard';
 import {FullLogo} from '../components/global/Logo';
 
@@ -16,8 +16,10 @@ const Dashboard: React.FC = () => {
 	const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
 	useEffect(() => {
-		dispatch(fetchProfiles());
-	}, [dispatch]);
+		if (user?.uid) {
+			dispatch(fetchProfilesByUserId(user.uid));
+		}
+	}, [dispatch, user?.uid]);
 
 	useEffect(() => {
 		const handleClickOutside = (event: MouseEvent) => {

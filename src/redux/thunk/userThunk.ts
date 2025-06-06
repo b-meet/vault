@@ -18,6 +18,7 @@ import {
 import {auth} from '../../firebase/firebaseConfig';
 import {SESSION_TIMEOUT, STORAGE_KEYS} from '../../constants';
 import {storage} from '../../utility/storageService';
+import {saveUserToCollection} from '../../firebase/firebaseService';
 import type {
 	AuthCheckResponse,
 	LoginCredentials,
@@ -34,6 +35,9 @@ export const loginWithEmail = createAsyncThunk(
 				password
 			);
 			const token = await getIdToken(userCredential.user);
+
+			// Save user to Firestore collection
+			await saveUserToCollection(extractUserData(userCredential.user));
 
 			saveUserSession(userCredential.user, token);
 
@@ -67,6 +71,9 @@ export const signupWithEmail = createAsyncThunk(
 				await updateProfile(userCredential.user, {displayName});
 			}
 
+			// Save user to Firestore collection
+			await saveUserToCollection(extractUserData(userCredential.user));
+
 			saveUserSession(userCredential.user, token);
 
 			return {
@@ -87,6 +94,9 @@ export const loginWithGoogle = createAsyncThunk(
 			const provider = new GoogleAuthProvider();
 			const userCredential = await signInWithPopup(auth, provider);
 			const token = await getIdToken(userCredential.user);
+
+			// Save user to Firestore collection
+			await saveUserToCollection(extractUserData(userCredential.user));
 
 			saveUserSession(userCredential.user, token);
 
@@ -132,10 +142,13 @@ export const refreshUserToken = createAsyncThunk(
 
 export const logout = createAsyncThunk(
 	'user/logout',
-	async (_, {rejectWithValue}) => {
+	async (_, {rejectWithValue, dispatch}) => {
 		try {
 			await signOut(auth);
 			clearUserSession();
+			// Reset profiles when user logs out
+			const {resetProfiles} = await import('../slice/profileSlice');
+			dispatch(resetProfiles());
 			return null;
 		} catch (error: any) {
 			return rejectWithValue(error.message);
@@ -152,6 +165,10 @@ export const checkAuthState = createAsyncThunk<AuthCheckResponse>(
 					if (user) {
 						try {
 							const token = await getIdToken(user);
+							
+							// Save user to Firestore collection on auth state check
+							await saveUserToCollection(extractUserData(user));
+							
 							saveUserSession(user, token);
 							resolve({
 								user: extractUserData(user),

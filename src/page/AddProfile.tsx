@@ -23,6 +23,7 @@ const AddProfile = () => {
 	const dispatch = useAppDispatch();
 	const location = useLocation();
 	const profiles = useAppSelector((state) => state.profile.profiles);
+	const currentUser = useAppSelector((state) => state.user.user);
 	const isEditing = location.search.includes('id=');
 	const [isSaving, setIsSaving] = useState(false);
 
@@ -65,18 +66,23 @@ const AddProfile = () => {
 	}, [isEditing, location.search, profiles, navigate]);
 
 	const handleSave = async () => {
+		if (!currentUser?.uid) {
+			console.error('No authenticated user found');
+			return;
+		}
+
 		setIsSaving(true);
 		try {
 			if (isEditing) {
 				if (profileData.id) {
-					await saveProfile(profileData);
+					await saveProfile(profileData, currentUser.uid);
 					dispatch(updateProfile(profileData));
 				} else {
 					console.error('Missing profile ID for update');
 				}
 			} else {
-				const docId = await saveProfile(profileData);
-				dispatch(addProfile({...profileData, id: docId}));
+				const docId = await saveProfile(profileData, currentUser.uid);
+				dispatch(addProfile({...profileData, id: docId, userId: currentUser.uid}));
 			}
 			navigate(ROUTES.DASHBOARD);
 		} catch (error) {

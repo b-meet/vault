@@ -1,5 +1,6 @@
 export interface Profile {
 	id?: string;
+	userId?: string;
 	name: string;
 	basicInfo: {
 		firstName: string;
@@ -21,4 +22,6 @@ export interface Profile {
 		github: string;
 		website: string;
 	};
+	createdAt?: Date;
+	updatedAt?: Date;
 }

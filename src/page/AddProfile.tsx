@@ -1,11 +1,22 @@
-import { useState, useEffect } from 'react';
-import type { Profile } from '../types';
-import { ArrowLeft, Save, User, MapPin, Globe, Calendar, Mail, Phone, Building, Link } from 'lucide-react';
-import { useNavigate, useLocation } from 'react-router';
-import { ROUTES } from '../constants';
-import { useAppDispatch, useAppSelector } from '../hooks/redux';
-import { addProfile, updateProfile } from '../redux/slice/profileSlice';
-import { saveProfile } from '../firebase/firebaseService';
+import {useState, useEffect} from 'react';
+import type {Profile} from '../types';
+import {
+	ArrowLeft,
+	Save,
+	User,
+	MapPin,
+	Globe,
+	Calendar,
+	Mail,
+	Phone,
+	Building,
+	Link,
+} from 'lucide-react';
+import {useNavigate, useLocation} from 'react-router';
+import {ROUTES} from '../constants';
+import {useAppDispatch, useAppSelector} from '../hooks/redux';
+import {addProfile, updateProfile} from '../redux/slice/profileSlice';
+import {saveProfile} from '../firebase/firebaseService';
 
 const AddProfile = () => {
 	const navigate = useNavigate();
@@ -65,7 +76,7 @@ const AddProfile = () => {
 				}
 			} else {
 				const docId = await saveProfile(profileData);
-				dispatch(addProfile({ ...profileData, id: docId }));
+				dispatch(addProfile({...profileData, id: docId}));
 			}
 			navigate(ROUTES.DASHBOARD);
 		} catch (error) {
@@ -75,8 +86,10 @@ const AddProfile = () => {
 		}
 	};
 
-	const isFormValid = profileData.name.trim() !== '' &&
-		(profileData.basicInfo.firstName.trim() !== '' || profileData.basicInfo.email.trim() !== '');
+	const isFormValid =
+		profileData.name.trim() !== '' &&
+		(profileData.basicInfo.firstName.trim() !== '' ||
+			profileData.basicInfo.email.trim() !== '');
 
 	return (
 		<div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
@@ -85,7 +98,7 @@ const AddProfile = () => {
 				<div className="flex justify-between items-center max-w-4xl mx-auto">
 					<button
 						onClick={() => navigate(ROUTES.DASHBOARD)}
-						className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors"
+						className="cursor-pointer flex items-center space-x-2 text-gray-600 hover:text-gray-900 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors"
 					>
 						<ArrowLeft className="h-5 w-5" />
 						<span className="font-medium">Back to Dashboard</span>
@@ -96,7 +109,13 @@ const AddProfile = () => {
 						className="flex items-center space-x-2 px-6 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-medium rounded-lg hover:from-indigo-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl"
 					>
 						<Save className="h-4 w-4" />
-						<span>{isSaving ? 'Saving...' : (isEditing ? 'Update Profile' : 'Save Profile')}</span>
+						<span>
+							{isSaving
+								? 'Saving...'
+								: isEditing
+									? 'Update Profile'
+									: 'Save Profile'}
+						</span>
 					</button>
 				</div>
 			</nav>
@@ -115,7 +134,7 @@ const AddProfile = () => {
 							type="text"
 							value={profileData.name}
 							onChange={(e) =>
-								setProfileData({ ...profileData, name: e.target.value })
+								setProfileData({...profileData, name: e.target.value})
 							}
 							className="w-full text-2xl font-semibold text-gray-900 bg-gray-50 border border-gray-200 py-3 px-4 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
 							placeholder="Enter a memorable name for this profile"
@@ -131,7 +150,9 @@ const AddProfile = () => {
 								<div className="p-2 bg-blue-100 rounded-lg">
 									<User className="h-5 w-5 text-blue-600" />
 								</div>
-								<h3 className="text-xl font-semibold text-gray-900">Basic Information</h3>
+								<h3 className="text-xl font-semibold text-gray-900">
+									Basic Information
+								</h3>
 							</div>
 						</div>
 						<div className="p-6">
@@ -251,7 +272,9 @@ const AddProfile = () => {
 								<div className="p-2 bg-green-100 rounded-lg">
 									<MapPin className="h-5 w-5 text-green-600" />
 								</div>
-								<h3 className="text-xl font-semibold text-gray-900">Address Information</h3>
+								<h3 className="text-xl font-semibold text-gray-900">
+									Address Information
+								</h3>
 							</div>
 						</div>
 						<div className="p-6">
@@ -374,7 +397,9 @@ const AddProfile = () => {
 								<div className="p-2 bg-purple-100 rounded-lg">
 									<Link className="h-5 w-5 text-purple-600" />
 								</div>
-								<h3 className="text-xl font-semibold text-gray-900">Social Links</h3>
+								<h3 className="text-xl font-semibold text-gray-900">
+									Social Links
+								</h3>
 							</div>
 						</div>
 						<div className="p-6">
@@ -481,7 +506,13 @@ const AddProfile = () => {
 							className="flex items-center space-x-2 px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-medium rounded-xl hover:from-indigo-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl"
 						>
 							<Save className="h-5 w-5" />
-							<span>{isSaving ? 'Saving...' : (isEditing ? 'Update Profile' : 'Save Profile')}</span>
+							<span>
+								{isSaving
+									? 'Saving...'
+									: isEditing
+										? 'Update Profile'
+										: 'Save Profile'}
+							</span>
 						</button>
 					</div>
 				</div>

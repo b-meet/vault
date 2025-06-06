@@ -1,16 +1,23 @@
-import { useEffect, useState } from 'react';
-import { Box, Globe } from 'lucide-react';
-import { useLocation, useNavigate } from 'react-router';
-import { ROUTES } from '../constants';
-import { useAppDispatch, useAppSelector } from '../hooks/redux';
-import { clearError } from '../redux/slice/userSlice';
-import { loginWithEmail, loginWithGoogle, signupWithEmail } from '../redux/thunk/userThunk';
+import {useEffect, useState} from 'react';
+import {Globe} from 'lucide-react';
+import {useLocation, useNavigate} from 'react-router';
+import {ROUTES} from '../constants';
+import {useAppDispatch, useAppSelector} from '../hooks/redux';
+import {clearError} from '../redux/slice/userSlice';
+import {
+	loginWithEmail,
+	loginWithGoogle,
+	signupWithEmail,
+} from '../redux/thunk/userThunk';
+import {Logo} from '../components/global/Logo';
 
 const Auth = () => {
 	const location = useLocation();
 	const navigate = useNavigate();
 	const dispatch = useAppDispatch();
-	const { loading, error, isAuthenticated } = useAppSelector((state) => state.user);
+	const {loading, error, isAuthenticated} = useAppSelector(
+		(state) => state.user
+	);
 
 	const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin');
 	const [email, setEmail] = useState('');
@@ -18,7 +25,7 @@ const Auth = () => {
 	const [displayName, setDisplayName] = useState('');
 
 	useEffect(() => {
-		const state = location.state as { isSignIn?: boolean };
+		const state = location.state as {isSignIn?: boolean};
 		if (state?.isSignIn !== undefined) {
 			setAuthMode(state.isSignIn ? 'signin' : 'signup');
 		}
@@ -38,13 +45,15 @@ const Auth = () => {
 		e.preventDefault();
 
 		if (authMode === 'signin') {
-			dispatch(loginWithEmail({ email, password }));
+			dispatch(loginWithEmail({email, password}));
 		} else {
-			dispatch(signupWithEmail({
-				email,
-				password,
-				...(displayName && { displayName })
-			}));
+			dispatch(
+				signupWithEmail({
+					email,
+					password,
+					...(displayName && {displayName}),
+				})
+			);
 		}
 	};
 
@@ -62,16 +71,18 @@ const Auth = () => {
 	return (
 		<div className="min-h-screen bg-gray-50 flex items-center justify-center px-6">
 			<div className="max-w-md w-full bg-white rounded-xl shadow-lg p-8">
-				<div className="text-center mb-8">
-					<Box className="h-12 w-12 text-indigo-600 mx-auto mb-4" />
-					<h2 className="text-2xl font-bold text-gray-900">
-						{authMode === 'signin' ? 'Welcome Back' : 'Create Account'}
-					</h2>
-					<p className="text-gray-600 mt-2">
-						{authMode === 'signin'
-							? 'Sign in to your Vault'
-							: 'Get started with Vault today'}
-					</p>
+				<div className="flex flex-col justify-center items-center gap-4 w-full mb-8">
+					<Logo />
+					<div className="text-center">
+						<h2 className="text-2xl font-bold text-gray-900">
+							{authMode === 'signin' ? 'Welcome Back' : 'Create Account'}
+						</h2>
+						<p className="text-gray-600 mt-2">
+							{authMode === 'signin'
+								? 'Sign in to your Vault'
+								: 'Get started with Vault today'}
+						</p>
+					</div>
 				</div>
 
 				{error && (
@@ -136,8 +147,7 @@ const Auth = () => {
 							? 'Loading...'
 							: authMode === 'signin'
 								? 'Sign In'
-								: 'Create Account'
-						}
+								: 'Create Account'}
 					</button>
 
 					<div className="relative my-6">

@@ -7,7 +7,7 @@ import {useAppSelector} from '../hooks/redux';
 const ExtensionPopup = () => {
 	const navigate = useNavigate();
 	const [extensionEnabled, setExtensionEnabled] = useState(true);
-	const { profiles } = useAppSelector((state) => state.profile);
+	const {profiles} = useAppSelector((state) => state.profile);
 
 	return (
 		<div className="w-80 bg-white rounded-lg shadow-xl border border-gray-200">

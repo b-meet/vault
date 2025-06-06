@@ -1,17 +1,16 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router';
-import { Provider } from 'react-redux';
-import { Settings } from 'lucide-react';
-import { PersistGate } from 'redux-persist/integration/react';
-import { persistor, store } from './redux/store';
-import { SessionProvider } from './components/SessionManager';
-import { ROUTES } from './constants';
+import {BrowserRouter, Routes, Route, Navigate} from 'react-router';
+import {Provider} from 'react-redux';
+import {PersistGate} from 'redux-persist/integration/react';
+import {persistor, store} from './redux/store';
+import {SessionProvider} from './components/SessionManager';
+import {ROUTES} from './constants';
 import Dashboard from './page/Dashboard';
 import Landing from './page/Landing';
 import Auth from './page/Auth';
 import Extention from './page/Extention';
 import AddProfile from './page/AddProfile';
 import Account from './page/Account';
-import { withAuthGuard } from './components/AuthGuard';
+import {withAuthGuard} from './components/AuthGuard';
 
 // Loading component for PersistGate
 const LoadingScreen = () => (
@@ -25,27 +24,36 @@ const LoadingScreen = () => (
 
 // Protected Dashboard component
 const ProtectedDashboard = withAuthGuard(Dashboard);
+const ProtectedAccount = withAuthGuard(Account);
+const ProtectedAddProfile = withAuthGuard(AddProfile);
 
 // App component
 function VaultApp() {
 	return (
 		<Provider store={store}>
 			<PersistGate loading={<LoadingScreen />} persistor={persistor}>
-					<BrowserRouter>
-						<SessionProvider>
-							<Routes>
-								<Route path="/" element={<Navigate to={ROUTES.DASHBOARD} replace />} />
-								<Route path={ROUTES.LANDING} element={<Landing />} />
-								<Route path={ROUTES.AUTH} element={<Auth />} />
-								<Route path={ROUTES.DASHBOARD} element={<ProtectedDashboard />} />
-								<Route path={ROUTES.SETTINGS} element={<Settings />} />
-								<Route path={ROUTES.EXTENTIONS} element={<Extention />} />
-								<Route path={ROUTES.ADD_PROFILE} element={<AddProfile />} />
-								<Route path={ROUTES.USER_PROFILE} element={<Account />} />
-								<Route path="*" element={<Navigate to={ROUTES.DASHBOARD} replace />} />
-							</Routes>
-						</SessionProvider>
-					</BrowserRouter>
+				<BrowserRouter>
+					<SessionProvider>
+						<Routes>
+							<Route path={ROUTES.LANDING} element={<Landing />} />
+							<Route path={ROUTES.AUTH} element={<Auth />} />
+							<Route path={ROUTES.EXTENTIONS} element={<Extention />} />
+							<Route path={ROUTES.DASHBOARD} element={<ProtectedDashboard />} />
+							<Route
+								path={ROUTES.USER_PROFILE}
+								element={<ProtectedAccount />}
+							/>
+							<Route
+								path={ROUTES.ADD_PROFILE}
+								element={<ProtectedAddProfile />}
+							/>
+							<Route
+								path="*"
+								element={<Navigate to={ROUTES.DASHBOARD} replace />}
+							/>
+						</Routes>
+					</SessionProvider>
+				</BrowserRouter>
 			</PersistGate>
 		</Provider>
 	);

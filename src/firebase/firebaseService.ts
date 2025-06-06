@@ -8,7 +8,7 @@ import {
 	setDoc,
 } from 'firebase/firestore';
 import type {Profile} from '../types';
-import { app } from './firebaseConfig';
+import {app} from './firebaseConfig';
 
 const db = getFirestore(app);
 

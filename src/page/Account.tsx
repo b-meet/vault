@@ -1,4 +1,4 @@
-import {useState} from 'react';
+import {useEffect, useState} from 'react';
 import {
 	ArrowLeft,
 	Camera,
@@ -14,6 +14,7 @@ import {
 import {ROUTES} from '../constants';
 import {useNavigate} from 'react-router';
 import {useAppSelector} from '../hooks/redux';
+import { getUserProfile, updateUserProfile } from '../firebase/firebaseService';
 
 const Account = () => {
 	const navigate = useNavigate();
@@ -21,26 +22,58 @@ const Account = () => {
 
 	const [isEditing, setIsEditing] = useState(false);
 	const [accountData, setAccountData] = useState({
-		firstName: 'Meet',
-		lastName: 'Bhalodiya',
-		email: 'meetbhalodiya1030@gmail.com',
-		phone: '08849740928',
-		dateOfBirth: '1990-01-15',
-		location: 'Ahmedabad, Gujarat',
+		firstName: '',
+		lastName: '',
+		email: '',
+		phone: '',
+		dateOfBirth: '',
+		location: '',
 		notifications: {
 			email: true,
 			browser: true,
 			security: true,
 		},
-		privacy: {
-			profileVisibility: 'private',
-			dataSharing: false,
-		},
 	});
 
-	const handleSave = () => {
-		setIsEditing(false);
+	useEffect(() => {
+		if (user?.uid) {
+			getUserProfile(user.uid)
+				.then((profileData) => {
+					setAccountData({
+						firstName: profileData.displayName?.split(' ')[0] ?? '',
+						lastName: profileData.displayName?.split(' ')[1] ?? '',
+						email: user.email ?? '',
+						phone: profileData.phone ?? '',
+						dateOfBirth: profileData.dateOfBirth ?? '',
+						location: profileData.location ?? '',
+						notifications: {
+							email: profileData.notifications?.email ?? true,
+							browser: profileData.notifications?.browser ?? true,
+							security: profileData.notifications?.security ?? true,
+						},
+					});
+				})
+				.catch((err) => console.error('Failed to fetch user profile:', err));
+		}
+	}, [user?.uid]);
+
+	const handleSave = async () => {
+		try {
+			if (user?.uid) {
+				await updateUserProfile(user.uid, {
+					displayName: `${accountData.firstName?.trim() || ''} ${accountData.lastName?.trim() || ''}`.trim(),
+					phone: accountData.phone,
+					dateOfBirth: accountData.dateOfBirth,
+					location: accountData.location,
+					notifications: accountData.notifications,
+				});
+			}
+			setIsEditing(false);
+		} catch (error) {
+			console.error('Failed to save profile:', error);
+		}
 	};
+
 
 	const ToggleSwitch = ({
 		checked,
@@ -191,16 +224,9 @@ const Account = () => {
 									<Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
 									<input
 										type="email"
-										value={accountData.email}
-										onChange={(e) =>
-											setAccountData({...accountData, email: e.target.value})
-										}
-										disabled={!isEditing}
-										className={`w-full pl-10 pr-3 py-2 border rounded-lg transition-colors ${
-											isEditing
-												? 'border-gray-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500'
-												: 'border-gray-200 bg-gray-50 text-gray-600'
-										}`}
+										value={user?.email ?? ''}
+										disabled
+										className="w-full pl-10 pr-3 py-2 border border-gray-200 bg-gray-50 text-gray-600 rounded-lg"
 									/>
 								</div>
 							</div>

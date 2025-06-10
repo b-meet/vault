@@ -60,7 +60,7 @@ const Dashboard: React.FC = () => {
 	const handleLogout = async () => {
 		try {
 			await dispatch(logout()).unwrap();
-			navigate(ROUTES.AUTH || '/auth');
+			navigate(ROUTES.AUTH);
 		} catch (error) {
 			console.error('Logout failed:', error);
 		}
@@ -180,7 +180,7 @@ const Dashboard: React.FC = () => {
 							<div>
 								<h2 className="text-2xl font-bold mb-3">
 									Welcome back,{' '}
-									{user?.displayName || user?.email?.split('@')[0]}! 👋
+									{user?.displayName ?? user?.email?.split('@')[0]}! 👋
 								</h2>
 								<p className="text-indigo-100 leading-relaxed max-w-2xl">
 									Welcome to Vault — your personal autofill assistant is ready.
@@ -190,53 +190,6 @@ const Dashboard: React.FC = () => {
 							<div className="hidden lg:block">
 								<div className="w-24 h-24 bg-white/20 rounded-full flex items-center justify-center">
 									<Box className="h-12 w-12 text-white" />
-								</div>
-							</div>
-						</div>
-					</div>
-
-					{/* Stats Cards */}
-					<div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-						<div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-							<div className="flex items-center justify-between">
-								<div>
-									<p className="text-sm font-medium text-gray-600">
-										Total Profiles
-									</p>
-									<p className="text-2xl font-bold text-gray-900">
-										{profiles.length}
-									</p>
-								</div>
-								<div className="h-12 w-12 bg-blue-100 rounded-lg flex items-center justify-center">
-									<User className="h-6 w-6 text-blue-600" />
-								</div>
-							</div>
-						</div>
-
-						<div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-							<div className="flex items-center justify-between">
-								<div>
-									<p className="text-sm font-medium text-gray-600">
-										Active Sessions
-									</p>
-									<p className="text-2xl font-bold text-gray-900">1</p>
-								</div>
-								<div className="h-12 w-12 bg-green-100 rounded-lg flex items-center justify-center">
-									<div className="h-6 w-6 bg-green-500 rounded-full"></div>
-								</div>
-							</div>
-						</div>
-
-						<div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-							<div className="flex items-center justify-between">
-								<div>
-									<p className="text-sm font-medium text-gray-600">
-										Storage Used
-									</p>
-									<p className="text-2xl font-bold text-gray-900">2.4 MB</p>
-								</div>
-								<div className="h-12 w-12 bg-purple-100 rounded-lg flex items-center justify-center">
-									<Box className="h-6 w-6 text-purple-600" />
 								</div>
 							</div>
 						</div>

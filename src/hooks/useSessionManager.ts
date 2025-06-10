@@ -49,7 +49,7 @@ export const useSessionManager = () => {
 			} catch (error) {
 				console.error('Failed to refresh token:', error);
 				dispatch(forceLogout());
-				navigate(ROUTES.AUTH || '/auth');
+				navigate(ROUTES.AUTH);
 			}
 		}
 	}, [isAuthenticated, sessionExpiry, token, dispatch, navigate]);

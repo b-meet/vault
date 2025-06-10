@@ -24,6 +24,14 @@ export interface UserDocument {
 	emailVerified: boolean;
 	createdAt: Date;
 	lastLoginAt: Date;
+	phone?: string;
+	dateOfBirth?: string;
+	location?: string;
+	notifications?: {
+		email: boolean;
+		browser: boolean;
+		security: boolean;
+	};
 }
 
 export const saveUserToCollection = async (user: {
@@ -36,23 +44,63 @@ export const saveUserToCollection = async (user: {
 	try {
 		const userRef = doc(db, 'users', user.uid);
 		const userDoc = await getDoc(userRef);
-		
+		const existingData = userDoc.exists() ? userDoc.data() : {};
+
 		const userData: UserDocument = {
 			uid: user.uid,
 			email: user.email,
 			displayName: user.displayName,
 			photoURL: user.photoURL,
 			emailVerified: user.emailVerified,
-			createdAt: userDoc.exists() ? userDoc.data().createdAt : new Date(),
+			createdAt: userDoc.exists() ? existingData.createdAt : new Date(),
 			lastLoginAt: new Date(),
+			phone: existingData.phone ?? '',
+			dateOfBirth: existingData.dateOfBirth ?? '',
+			location: existingData.location ?? '',
+			notifications: existingData.notifications ?? {
+				email: true,
+				browser: true,
+				security: true,
+			},
 		};
 
-		await setDoc(userRef, userData, {merge: true});
+		await setDoc(userRef, userData, { merge: true });
 	} catch (error) {
 		console.error('Error saving user to collection:', error);
 		throw error;
 	}
 };
+
+//for updating the user details in the user collection
+export const updateUserProfile = async (
+	uid: string,
+	updates: Partial<UserDocument>
+): Promise<void> => {
+	try {
+		const userRef = doc(db, 'users', uid);
+		await setDoc(userRef, updates, { merge: true });
+	} catch (error) {
+		console.error('Error updating user profile:', error);
+		throw error;
+	}
+};
+
+// Function to get user profile by UID
+export const getUserProfile = async (uid: string) => {
+  try {
+    const userDocRef = doc(db, 'users', uid);
+    const userDoc = await getDoc(userDocRef);
+    if (userDoc.exists()) {
+      return userDoc.data();
+    } else {
+      throw new Error('User profile not found');
+    }
+  } catch (error) {
+    console.error('Error fetching user profile:', error);
+    throw error;
+  }
+};
+
 
 // Profile management functions with userId linking
 export const saveProfile = async (profile: Profile, userId: string): Promise<string> => {
